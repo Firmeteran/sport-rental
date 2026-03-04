@@ -1,0 +1,53 @@
+package service
+
+import (
+	"errors"
+	"sport-rental/models"
+	"sport-rental/repository"
+
+	"golang.org/x/crypto/bcrypt"
+)
+
+type UserService interface {
+	Register(input models.User) (models.User, error)
+	Login(email, password string) (models.User, error)
+}
+
+type userService struct {
+	userRepo repository.UserRepo
+}
+
+// Constructor with dependency injection
+func NewUserService(repo repository.UserRepo) UserService {
+	return &userService{userRepo: repo}
+}
+
+// Register - new user registration
+func (s *userService) Register(input models.User) (models.User, error) {
+	// Hash password before get stored
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return models.User{}, err
+	}
+	input.Password = string(hashedPassword)
+
+	// Call repo to store the data
+	return s.userRepo.Create(input)
+}
+
+// Login - email and password verification
+func (s *userService) Login(email, password string) (models.User, error) {
+	// Search user based on email
+	user, err := s.userRepo.GetByEmail(email)
+	if err != nil {
+		return models.User{}, errors.New("User cannot be found.")
+	}
+
+	// Compare password input with the hashed one from database
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return models.User{}, errors.New("Wrong password.")
+	}
+
+	return user, nil
+}
