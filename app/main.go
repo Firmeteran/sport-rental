@@ -32,12 +32,19 @@ func main() {
 	eqSvc := service.NewEquipmentService(eqRepo)
 	eqCtrl := controller.NewEquipmentController(eqSvc)
 
+	// Rental
+	rentalRepo := repository.NewRentalRepo(config.DB)
+	rentalSvc := service.NewRentalService(rentalRepo, userRepo, eqRepo)
+	rentalCtrl := controller.NewRentalController(rentalSvc)
+
 	// Routes
 	e.POST("/register", userCtrl.Register)
 	e.POST("/login", userCtrl.Login)
 
 	e.POST("/equipments", eqCtrl.Create)
 	e.GET("/equipments", eqCtrl.GetAll)
+
+	e.POST("/rentals", rentalCtrl.CreateRental)
 
 	port := os.Getenv("PORT")
 	if port == "" {
