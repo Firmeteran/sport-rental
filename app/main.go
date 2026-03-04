@@ -22,13 +22,22 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// Dependency Injection
+	// User
 	userRepo := repository.NewUserRepo(config.DB)
 	userSvc := service.NewUserService(userRepo)
 	userCtrl := controller.NewUserController(userSvc)
 
+	// Equipment
+	eqRepo := repository.NewEquipmentRepo(config.DB)
+	eqSvc := service.NewEquipmentService(eqRepo)
+	eqCtrl := controller.NewEquipmentController(eqSvc)
+
 	// Routes
 	e.POST("/register", userCtrl.Register)
 	e.POST("/login", userCtrl.Login)
+
+	e.POST("/equipments", eqCtrl.Create)
+	e.GET("/equipments", eqCtrl.GetAll)
 
 	port := os.Getenv("PORT")
 	if port == "" {
