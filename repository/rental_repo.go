@@ -7,7 +7,7 @@ import (
 )
 
 type RentalRepo interface {
-	CreateRental(rental models.RentalHistory) (models.RentalHistory, error)
+	CreateRental(rental models.RentalHistory, cost float64) (models.RentalHistory, error)
 	GetRentalByUserID(userID int) ([]models.RentalHistory, error)
 }
 
@@ -20,11 +20,12 @@ func NewRentalRepo(db *gorm.DB) RentalRepo {
 	return &rentalRepo{db: db}
 }
 
-func (r *rentalRepo) CreateRental(rental models.RentalHistory) (models.RentalHistory, error) {
+func (r *rentalRepo) CreateRental(rental models.RentalHistory, cost float64) (models.RentalHistory, error) {
 	// Using transaction for data consistency
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		// Save rental history
-		if err := tx.Create(&rental).Error; err != nil {
+		// Reducing user deposit balance
+		if err := tx.Model(&models.User{}).Where("id = ?", rental.UserID).
+			Update("deposit_amount", gorm.Expr("deposit_amount = ?", cost)).Error; err != nil {
 			return err
 		}
 
@@ -33,6 +34,12 @@ func (r *rentalRepo) CreateRental(rental models.RentalHistory) (models.RentalHis
 			Update("stock_availability", gorm.Expr("stock_availability - ?", 1)).Error; err != nil {
 			return err
 		}
+
+		// Save rental history
+		if err := tx.Create(&rental).Error; err != nil {
+			return err
+		}
+
 		return nil
 	})
 	return rental, err

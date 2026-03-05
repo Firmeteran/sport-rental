@@ -47,5 +47,5 @@ func (s *rentalService) RentEquipment(userID, equipmentID int) (models.RentalHis
 		RentDate:    time.Now(),
 	}
 
-	return s.rentalRepo.CreateRental(newRental)
+	return s.rentalRepo.CreateRental(newRental, equipment.RentalCosts)
 }
