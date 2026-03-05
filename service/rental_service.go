@@ -9,6 +9,7 @@ import (
 
 type RentalService interface {
 	RentEquipment(userID, equipmentID int) (models.RentalHistory, error)
+	ReturnEquipment(rentalID int) error
 }
 
 type rentalService struct {
@@ -48,4 +49,20 @@ func (s *rentalService) RentEquipment(userID, equipmentID int) (models.RentalHis
 	}
 
 	return s.rentalRepo.CreateRental(newRental, equipment.RentalCosts)
+}
+
+func (s *rentalService) ReturnEquipment(rentalID int) error {
+	// Search for rental data
+	rental, err := s.rentalRepo.GetByID(uint(rentalID))
+	if err != nil {
+		return errors.New("Rental data cannot be found.")
+	}
+
+	// Validation: has it ever been returned?
+	if rental.ReturnDate != nil {
+		return errors.New("This tool has been returned previously.")
+	}
+
+	// Return execution through repo
+	return s.rentalRepo.UpdateReturn(rental.ID, rental.EquipmentID)
 }

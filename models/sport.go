@@ -27,10 +27,10 @@ type Equipment struct {
 // Rental history
 type RentalHistory struct {
 	gorm.Model
-	UserID      uint      `json:"user_id"`
-	EquipmentID uint      `json:"equipment_id"`
-	RentDate    time.Time `json:"rent_date"`
-	ReturnDate  time.Time `json:"return_date"`
-	User        User      `gorm:"primaryKey:UserID"`
-	Equipment   Equipment `gorm:"primaryKey:EquipmentID"`
+	UserID      uint       `json:"user_id"`
+	EquipmentID uint       `json:"equipment_id"`
+	RentDate    time.Time  `json:"rent_date"`
+	ReturnDate  *time.Time `json:"return_date"`
+	User        User       `gorm:"primaryKey:UserID"`
+	Equipment   Equipment  `gorm:"primaryKey:EquipmentID"`
 }
