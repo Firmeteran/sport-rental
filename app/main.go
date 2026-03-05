@@ -45,6 +45,7 @@ func main() {
 	e.GET("/equipments", eqCtrl.GetAll)
 
 	e.POST("/rentals", rentalCtrl.CreateRental)
+	e.PUT("/rentals:id/return", rentalCtrl.ReturnRental)
 
 	port := os.Getenv("PORT")
 	if port == "" {

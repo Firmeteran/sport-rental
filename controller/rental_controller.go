@@ -31,3 +31,20 @@ func (h *RentalController) CreateRental(c echo.Context) error {
 		"data":    res,
 	})
 }
+
+func (h *RentalController) ReturnRental(c echo.Context) error {
+	// Take ID from URL param
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{"message": "Invalid ID format."})
+	}
+
+	err = h.svc.ReturnEquipment(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{"message": err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "The tool has been successfully returned, and the stock has been updated.",
+	})
+}
