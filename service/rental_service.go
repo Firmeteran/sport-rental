@@ -41,11 +41,15 @@ func (s *rentalService) RentEquipment(userID, equipmentID int) (models.RentalHis
 		return models.RentalHistory{}, errors.New("Insufficient deposit balance.")
 	}
 
+	// Due date (24 hour) from now
+	dueDate := time.Now().Add(24 * time.Hour)
+
 	// Create rental object
 	newRental := models.RentalHistory{
 		UserID:      uint(userID),
 		EquipmentID: uint(equipmentID),
 		RentDate:    time.Now(),
+		DueDate:     dueDate,
 	}
 
 	return s.rentalRepo.CreateRental(newRental, equipment.RentalCosts)
@@ -61,6 +65,22 @@ func (s *rentalService) ReturnEquipment(rentalID int) error {
 	// Validation: has it ever been returned?
 	if rental.ReturnDate != nil {
 		return errors.New("This tool has been returned previously.")
+	}
+
+	// Overdue logic
+	now := time.Now()
+	if now.After(rental.DueDate) {
+		// Calculate the time in hours
+		overdueHours := now.Sub(rental.DueDate).Hours()
+
+		// Charge IDR 10.000 per hour of delay
+		fineAmount := int(overdueHours) * 10000
+
+		// Deduct user's balance for fines
+		err := s.userRepo.UpdateBalance(int(rental.UserID), -float64(fineAmount))
+		if err != nil {
+			return errors.New("Failed to deduct fine from balance.")
+		}
 	}
 
 	// Return execution through repo
