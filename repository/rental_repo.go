@@ -28,7 +28,7 @@ func (r *rentalRepo) CreateRental(rental models.RentalHistory, cost float64) (mo
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		// Reducing user deposit balance
 		if err := tx.Model(&models.User{}).Where("id = ?", rental.UserID).
-			Update("deposit_amount", gorm.Expr("deposit_amount = ?", cost)).Error; err != nil {
+			Update("deposit_amount", gorm.Expr("deposit_amount - ?", cost)).Error; err != nil {
 			return err
 		}
 

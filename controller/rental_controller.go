@@ -17,11 +17,17 @@ func NewRentalController(s service.RentalService) *RentalController {
 }
 
 func (h *RentalController) CreateRental(c echo.Context) error {
-	// Take UserID from JWT or Body
-	uid, _ := strconv.Atoi(c.FormValue("user_id"))
-	eid, _ := strconv.Atoi(c.FormValue("equipment_id"))
+	// Struct for JSON request
+	var input struct {
+		UserID      int `json:"user_id"`
+		EquipmentID int `json:"equipment_id"`
+	}
 
-	res, err := h.svc.RentEquipment(uid, eid)
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{"message": "Invalid request format."})
+	}
+
+	res, err := h.svc.RentEquipment(input.UserID, input.EquipmentID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{"message": err.Error()})
 	}
