@@ -11,6 +11,7 @@ type UserRepo interface {
 	Create(user models.User) (models.User, error)
 	GetByEmail(email string) (models.User, error)
 	UpdateDeposit(userID int, newAmount float64) error
+	GetByID(id uint) (models.User, error)
 }
 
 type userRepo struct {
@@ -38,4 +39,11 @@ func (r *userRepo) GetByEmail(email string) (models.User, error) {
 // UpdateDeposit - Update user balance
 func (r *userRepo) UpdateDeposit(userID int, newAmount float64) error {
 	return r.db.Model(&models.User{}).Where("id = ?", userID).Update("deposit_amount", newAmount).Error
+}
+
+// GetByID - Find user based on ID
+func (r *userRepo) GetByID(id uint) (models.User, error) {
+	var user models.User
+	err := r.db.First(&user, id).Error
+	return user, err
 }
