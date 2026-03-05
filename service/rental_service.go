@@ -22,10 +22,22 @@ func NewRentalService(r repository.RentalRepo, u repository.UserRepo, e reposito
 }
 
 func (s *rentalService) RentEquipment(userID, equipmentID int) (models.RentalHistory, error) {
-	// Tool validation
+	// Tool & stock validation
 	equipment, err := s.equipmentRepo.GetByID(uint(equipmentID))
-	if err != nil || equipment.StockAvailability <= 0 {
-		return models.RentalHistory{}, errors.New("Tool are out of stock.")
+	if err != nil {
+		return models.RentalHistory{}, errors.New("Equipment is not found.")
+	}
+	if equipment.StockAvailability <= 0 {
+		return models.RentalHistory{}, errors.New("Equipment are out of stock.")
+	}
+
+	// User and balance (deposit) validation
+	user, err := s.userRepo.GetByID(uint(userID))
+	if err != nil {
+		return models.RentalHistory{}, errors.New("User is not found.")
+	}
+	if user.DepositAmount < equipment.RentalCosts {
+		return models.RentalHistory{}, errors.New("Insufficient deposit balance.")
 	}
 
 	// Create rental object
