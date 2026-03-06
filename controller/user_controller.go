@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"sport-rental/models"
 	"sport-rental/service"
+	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -63,4 +66,36 @@ func (h *UserController) Login(c echo.Context) error {
 		"data":    user,
 	})
 
+}
+
+// Midtrans Notification
+func (h *UserController) HandleMTNotifs(c echo.Context) error {
+	var notification map[string]interface{}
+	if err := c.Bind(&notification); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{"message": "Invalid notification."})
+	}
+
+	transactionStatus := notification["transaction_status"].(string)
+	orderID := notification["order_id"].(string)
+	grossAmountstr := notification["gross_amount"].(string)
+
+	// Convert gross amount to float64
+	var grossAmount float64
+	fmt.Sscanf(grossAmountstr, "%f", &grossAmount)
+
+	if transactionStatus == "settlement" {
+		// Take user ID from order ID
+		parts := strings.Split(orderID, "-")
+		if len(parts) > 1 {
+			userID, _ := strconv.Atoi(parts[1])
+
+			// Update balance in database
+			err := h.userService.AddBalance(userID, grossAmount)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, map[string]interface{}{"message": "Failed to update user's balance."})
+			}
+		}
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{"message": "Notification has been handled."})
 }

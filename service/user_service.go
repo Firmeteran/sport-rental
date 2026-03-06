@@ -11,6 +11,7 @@ import (
 type UserService interface {
 	Register(input models.User) (models.User, error)
 	Login(email, password string) (models.User, error)
+	AddBalance(userID int, amount float64) error
 }
 
 type userService struct {
@@ -50,4 +51,15 @@ func (s *userService) Login(email, password string) (models.User, error) {
 	}
 
 	return user, nil
+}
+
+// AddBalance - add deposit balance for user
+func (s *userService) AddBalance(userID int, amount float64) error {
+	// User validation if it's in the database
+	_, err := s.userRepo.GetByID(uint(userID))
+	if err != nil {
+		return errors.New("User not found.")
+	}
+
+	return s.userRepo.AddBalance(userID, amount)
 }

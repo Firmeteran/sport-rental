@@ -53,6 +53,7 @@ func main() {
 	e.PUT("/rentals/return", rentalCtrl.ReturnRental)
 
 	e.POST("/topup", topUpCtrl.RequestTopUp)
+	e.POST("/midtrans/notifications", userCtrl.HandleMTNotifs)
 
 	port := os.Getenv("PORT")
 	if port == "" {

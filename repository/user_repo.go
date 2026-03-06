@@ -12,6 +12,7 @@ type UserRepo interface {
 	GetByEmail(email string) (models.User, error)
 	UpdateBalance(userID int, newAmount float64) error
 	GetByID(id uint) (models.User, error)
+	AddBalance(userID int, amount float64) error
 }
 
 type userRepo struct {
@@ -47,4 +48,10 @@ func (r *userRepo) GetByID(id uint) (models.User, error) {
 	var user models.User
 	err := r.db.First(&user, id).Error
 	return user, err
+}
+
+// AddBalance - Add deposit balance from top-up
+func (r *userRepo) AddBalance(userID int, amount float64) error {
+	return r.db.Model(&models.User{}).Where("id = ?", userID).
+		Update("deposit_amount", gorm.Expr("deposit_amount + ?", amount)).Error
 }
