@@ -50,7 +50,7 @@ func main() {
 	e.GET("/equipments", eqCtrl.GetAll)
 
 	e.POST("/rentals", rentalCtrl.CreateRental)
-	e.PUT("/rentals/:id/return", rentalCtrl.ReturnRental)
+	e.PUT("/rentals/return", rentalCtrl.ReturnRental)
 
 	e.POST("/topup", topUpCtrl.RequestTopUp)
 

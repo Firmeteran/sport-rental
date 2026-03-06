@@ -3,7 +3,6 @@ package controller
 import (
 	"net/http"
 	"sport-rental/service"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -14,6 +13,10 @@ type RentalController struct {
 
 func NewRentalController(s service.RentalService) *RentalController {
 	return &RentalController{svc: s}
+}
+
+type ReturnRequest struct {
+	ID int `json:"rental_id"`
 }
 
 func (h *RentalController) CreateRental(c echo.Context) error {
@@ -39,15 +42,27 @@ func (h *RentalController) CreateRental(c echo.Context) error {
 }
 
 func (h *RentalController) ReturnRental(c echo.Context) error {
-	// Take ID from URL param
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{"message": "Invalid ID format."})
+	var req ReturnRequest
+
+	// Bind body to JSON
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"message": "Invalid JSON format.",
+		})
 	}
 
-	err = h.svc.ReturnEquipment(id)
+	// Make sure ID is not empty
+	if req.ID == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"message": "ID is required in JSON body.",
+		})
+	}
+
+	err := h.svc.ReturnEquipment(req.ID)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{"message": err.Error()})
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"message": err.Error(),
+		})
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{

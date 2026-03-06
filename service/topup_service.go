@@ -28,7 +28,7 @@ func (s *topUpService) CreateTopUp(userID int, amount float64) (models.TopUp, er
 	serverKey := os.Getenv("MIDTRANS_SERVER_KEY")
 
 	// Specify the environment (sandbox vs production)
-	enviroment := midtrans.Production
+	enviroment := midtrans.Sandbox
 	if os.Getenv("MIDTRANS_IS_PRODUCTION") == "true" {
 		enviroment = midtrans.Production
 	}
