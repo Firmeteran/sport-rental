@@ -25,6 +25,11 @@ func NewUserService(repo repository.UserRepo) UserService {
 
 // Register - new user registration
 func (s *userService) Register(input models.User) (models.User, error) {
+	// Warning password should not be empty
+	if input.Password == "" {
+		return models.User{}, errors.New("Password cannot be empty.")
+	}
+
 	// Hash password before get stored
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {

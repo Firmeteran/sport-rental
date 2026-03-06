@@ -11,7 +11,7 @@ type User struct {
 	gorm.Model
 	Username      string  `gorm:"unique;not null" json:"username"`
 	Email         string  `gorm:"unique;not null" json:"email"`
-	Password      string  `gorm:"not null" json:"-"`
+	Password      string  `gorm:"not null" json:"password,omitempty"`
 	DepositAmount float64 `gorm:"default:0" json:"deposit_amount"`
 }
 
