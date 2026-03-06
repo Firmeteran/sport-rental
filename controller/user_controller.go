@@ -18,7 +18,10 @@ type UserController struct {
 
 // Constructor
 func NewUserController(s service.UserService, ts service.TopUpService) *UserController {
-	return &UserController{userService: s}
+	return &UserController{
+		userService:  s,
+		topUpService: ts,
+	}
 }
 
 // Register - POST /register handler
