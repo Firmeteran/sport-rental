@@ -15,7 +15,7 @@ import (
 func main() {
 	// Connect to database
 	config.InitDB()
-	config.DB.AutoMigrate(&models.User{}, &models.Equipment{}, &models.RentalHistory{})
+	config.DB.AutoMigrate(&models.User{}, &models.Equipment{}, &models.RentalHistory{}, &models.TopUp{})
 
 	e := echo.New()
 	e.Use(middleware.Logger())
@@ -37,6 +37,11 @@ func main() {
 	rentalSvc := service.NewRentalService(rentalRepo, userRepo, eqRepo)
 	rentalCtrl := controller.NewRentalController(rentalSvc)
 
+	// Top Up
+	topUpRepo := repository.NewTopUpRepo(config.DB)
+	topUpSvc := service.NewTopUpService(topUpRepo)
+	topUpCtrl := controller.NewTopUpController(topUpSvc)
+
 	// Routes
 	e.POST("/register", userCtrl.Register)
 	e.POST("/login", userCtrl.Login)
@@ -46,6 +51,8 @@ func main() {
 
 	e.POST("/rentals", rentalCtrl.CreateRental)
 	e.PUT("/rentals/:id/return", rentalCtrl.ReturnRental)
+
+	e.POST("/topup", topUpCtrl.RequestTopUp)
 
 	port := os.Getenv("PORT")
 	if port == "" {

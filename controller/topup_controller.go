@@ -15,11 +15,12 @@ func NewTopUpController(s service.TopUpService) *TopUpController {
 	return &TopUpController{s}
 }
 
+type TopUpRequest struct {
+	UserID uint    `json:"user_id"`
+	Amount float64 `json:"amount"`
+}
+
 func (h *TopUpController) RequestTopUp(c echo.Context) error {
-	type TopUpRequest struct {
-		UserID uint    `json:"user_id"`
-		Amount float64 `json:"amount"`
-	}
 
 	req := new(TopUpRequest)
 
