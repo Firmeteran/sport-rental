@@ -79,8 +79,9 @@ func (h *UserController) HandleMTNotifs(c echo.Context) error {
 	transactionStatus, _ := notification["transaction_status"].(string)
 	orderID, _ := notification["order_id"].(string)
 
-	// Abaikan jika ini hanya tes dari dashboard Midtrans
+	// Midtrans notification test
 	if strings.HasPrefix(orderID, "payment_notif_test") {
+		fmt.Println("DEBUG: Menerima notifikasi tes dari Midtrans.")
 		return c.JSON(http.StatusOK, map[string]interface{}{"message": "Test notification success"})
 	}
 
@@ -88,7 +89,7 @@ func (h *UserController) HandleMTNotifs(c echo.Context) error {
 		var grossAmount float64
 		switch v := notification["gross_amount"].(type) {
 		case string:
-			fmt.Sscan(v, "&f", &grossAmount)
+			fmt.Sscanf(v, "%f", &grossAmount)
 		case float64:
 			grossAmount = v
 		}
