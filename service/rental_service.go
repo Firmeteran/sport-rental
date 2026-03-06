@@ -8,7 +8,7 @@ import (
 )
 
 type RentalService interface {
-	RentEquipment(userID, equipmentID int) (models.RentalHistory, error)
+	RentEquipment(userID, equipmentID int, durationHours int) (models.RentalHistory, error)
 	ReturnEquipment(rentalID int) error
 }
 
@@ -22,7 +22,7 @@ func NewRentalService(r repository.RentalRepo, u repository.UserRepo, e reposito
 	return &rentalService{r, u, e}
 }
 
-func (s *rentalService) RentEquipment(userID, equipmentID int) (models.RentalHistory, error) {
+func (s *rentalService) RentEquipment(userID, equipmentID int, durationHours int) (models.RentalHistory, error) {
 	// Tool & stock validation
 	equipment, err := s.equipmentRepo.GetByID(uint(equipmentID))
 	if err != nil {
@@ -32,17 +32,20 @@ func (s *rentalService) RentEquipment(userID, equipmentID int) (models.RentalHis
 		return models.RentalHistory{}, errors.New("Equipment are out of stock.")
 	}
 
+	// Total cost
+	totalCost := equipment.RentalCosts * float64(durationHours)
+
 	// User and balance (deposit) validation
 	user, err := s.userRepo.GetByID(uint(userID))
 	if err != nil {
 		return models.RentalHistory{}, errors.New("User is not found.")
 	}
-	if user.DepositAmount < equipment.RentalCosts {
+	if user.DepositAmount < totalCost {
 		return models.RentalHistory{}, errors.New("Insufficient deposit balance.")
 	}
 
-	// Due date (24 hour) from now
-	dueDate := time.Now().Add(24 * time.Hour)
+	// Due date based on duration hours
+	dueDate := time.Now().Add(time.Duration(durationHours) * time.Hour)
 
 	// Create rental object
 	newRental := models.RentalHistory{
@@ -52,7 +55,7 @@ func (s *rentalService) RentEquipment(userID, equipmentID int) (models.RentalHis
 		DueDate:     dueDate,
 	}
 
-	return s.rentalRepo.CreateRental(newRental, equipment.RentalCosts)
+	return s.rentalRepo.CreateRental(newRental, totalCost)
 }
 
 func (s *rentalService) ReturnEquipment(rentalID int) error {

@@ -22,15 +22,16 @@ type ReturnRequest struct {
 func (h *RentalController) CreateRental(c echo.Context) error {
 	// Struct for JSON request
 	var input struct {
-		UserID      int `json:"user_id"`
-		EquipmentID int `json:"equipment_id"`
+		UserID        int `json:"user_id"`
+		EquipmentID   int `json:"equipment_id"`
+		DurationHours int `json:"duration_hours"`
 	}
 
 	if err := c.Bind(&input); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{"message": "Invalid request format."})
 	}
 
-	res, err := h.svc.RentEquipment(input.UserID, input.EquipmentID)
+	res, err := h.svc.RentEquipment(input.UserID, input.EquipmentID, input.DurationHours)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{"message": err.Error()})
 	}
