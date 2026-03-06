@@ -12,11 +12,12 @@ import (
 )
 
 type UserController struct {
-	userService service.UserService
+	userService  service.UserService
+	topUpService service.TopUpService
 }
 
 // Constructor
-func NewUserController(s service.UserService) *UserController {
+func NewUserController(s service.UserService, ts service.TopUpService) *UserController {
 	return &UserController{userService: s}
 }
 
@@ -99,8 +100,13 @@ func (h *UserController) HandleMTNotifs(c echo.Context) error {
 		if len(parts) >= 2 {
 			userID, err := strconv.Atoi(parts[1])
 			if err == nil || userID > 0 {
+				// Add user deposit balance
 				_ = h.userService.AddBalance(userID, grossAmount)
 				fmt.Printf("DEBUG: Berhasil tambah saldo %.2f ke User ID %d\n", grossAmount, userID)
+
+				// Update top up status
+				_ = h.topUpService.UpdateStatus(orderID, "success")
+				fmt.Printf("DEBUG: Status Order %s berhasil diubah ke success\n", orderID)
 			}
 		}
 	}

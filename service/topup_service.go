@@ -13,6 +13,7 @@ import (
 
 type TopUpService interface {
 	CreateTopUp(userID int, amount float64) (models.TopUp, error)
+	UpdateStatus(orderID string, status string) error
 }
 
 type topUpService struct {
@@ -64,4 +65,8 @@ func (s *topUpService) CreateTopUp(userID int, amount float64) (models.TopUp, er
 	}
 
 	return s.repo.Create(topup)
+}
+
+func (s *topUpService) UpdateStatus(orderID string, status string) error {
+	return s.repo.UpdateStatus(orderID, status)
 }
